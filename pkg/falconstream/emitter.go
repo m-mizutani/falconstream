@@ -101,7 +101,9 @@ type consoleEmitter struct{}
 func (x *consoleEmitter) setup() error    { return nil }
 func (x *consoleEmitter) teardown() error { return nil }
 func (x *consoleEmitter) emit(ev *falconEvent) error {
-	pp.Println(*ev)
+	if _, err := pp.Println(*ev); err != nil {
+		return errors.Wrap(err, "Fail to output event by pp")
+	}
 	return nil
 }
 
@@ -131,7 +133,9 @@ func (x *s3Emitter) emit(ev *falconEvent) error {
 
 	t := time.Unix(ev.MetaData.EventCreationTime/1000, 0)
 	h := sha256.New()
-	h.Write(raw)
+	if _, err := h.Write(raw); err != nil {
+		return errors.Wrap(err, "Fail to write buffer for sha256 hash")
+	}
 	fname := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", h.Sum(nil))
 	s3Key := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fname
 	s3Path := "s3://" + x.args.AwsS3Bucket + "/" + s3Key
@@ -162,7 +166,9 @@ func (x *s3Emitter) emit(ev *falconEvent) error {
 	if !exists {
 		var buf bytes.Buffer
 		zw := gzip.NewWriter(&buf)
-		zw.Write(raw)
+		if _, err := zw.Write(raw); err != nil {
+			return errors.Wrap(err, "Fail to write gzip stream for event")
+		}
 		zw.Close()
 
 		_, err = x.s3client.PutObject(&s3.PutObjectInput{
@@ -171,7 +177,7 @@ func (x *s3Emitter) emit(ev *falconEvent) error {
 			Key:    &s3Key,
 		})
 		if err != nil {
-			return errors.Wrapf(err, "Fail to put log object: %s", x.args.AwsS3Bucket, s3Key)
+			return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
 		}
 		Logger.WithField("s3path", s3Path).Trace("Object uploaded")
 	} else {
