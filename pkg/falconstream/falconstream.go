@@ -14,6 +14,11 @@ const (
 // Logger is exposed to control logging behavior from outside
 var Logger = logrus.New()
 
+// SetGoFalconLoggerLevel changes log level of gofalcon
+func SetGoFalconLoggerLevel(level logrus.Level) {
+	gofalcon.Logger.SetLevel(level)
+}
+
 // Arguments includes all parameters that can be controlled from outside for Stream.
 type Arguments struct {
 	Credential CredentialArguments

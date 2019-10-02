@@ -74,6 +74,7 @@ func main() {
 			return fmt.Errorf("Invalid log level: %s", logLevel)
 		}
 		falconstream.Logger.SetLevel(level)
+		falconstream.SetGoFalconLoggerLevel(level)
 
 		falconstream.Logger.WithFields(logrus.Fields{
 			"args":     args,
