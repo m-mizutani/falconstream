@@ -8,7 +8,7 @@ import (
 
 const (
 	// Version number
-	Version = "v0.1.1"
+	Version = "v0.1.2"
 )
 
 // Logger is exposed to control logging behavior from outside
@@ -51,7 +51,7 @@ func (x *Stream) Start(args Arguments) error {
 		return err
 	}
 
-	ch := client.Sensor.EventStream()
+	ch := client.Sensor.EventStream(nil)
 	for q := range ch {
 		if q.Error != nil {
 			return errors.Wrap(q.Error, "Fail in EventStream")

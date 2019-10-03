@@ -1,6 +1,8 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/aws/aws-sdk-go v1.25.3 h1:uM16hIw9BotjZKMZlX05SN2EFtaWfi/NonPKIARiBLQ=
 github.com/aws/aws-sdk-go v1.25.3/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/aws/aws-sdk-go v1.25.4 h1:exwxtR517g6OKm2rtAD5EANtjbzmnjEAco189zy/Uhc=
+github.com/aws/aws-sdk-go v1.25.4/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/cpuguy83/go-md2man/v2 v2.0.0 h1:EoUDS0afbrsXAZ9YQ9jdu/mZ2sXgT1/2yyNng4PGlyM=
@@ -29,6 +31,8 @@ github.com/m-mizutani/gofalcon v0.0.0-20191002002738-fc80925e5846 h1:+ff0HCnCxIe
 github.com/m-mizutani/gofalcon v0.0.0-20191002002738-fc80925e5846/go.mod h1:zvEcx9YlRozdAz8ig7uOhRAvtL5zym6DIfxvEFj+dMs=
 github.com/m-mizutani/gofalcon v0.0.0-20191002133559-828db2f40373 h1:ySxNN1Vbe5Qy8te2wiNCtaNQdKSp0CI8M/jVog6hmvM=
 github.com/m-mizutani/gofalcon v0.0.0-20191002133559-828db2f40373/go.mod h1:zvEcx9YlRozdAz8ig7uOhRAvtL5zym6DIfxvEFj+dMs=
+github.com/m-mizutani/gofalcon v0.0.0-20191003010721-fc6517c9acd1 h1:LusTOd39cHN91GeGP3EWM3uFZqsaLYCx8NYBbLklpcU=
+github.com/m-mizutani/gofalcon v0.0.0-20191003010721-fc6517c9acd1/go.mod h1:zvEcx9YlRozdAz8ig7uOhRAvtL5zym6DIfxvEFj+dMs=
 github.com/mattn/go-colorable v0.1.4 h1:snbPLB8fVfU9iwbbo30TPtbLRzwWu6aJS6Xh4eaaviA=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
