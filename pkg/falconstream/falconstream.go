@@ -8,7 +8,7 @@ import (
 
 const (
 	// Version number
-	Version = "v0.1.2"
+	Version = "v0.1.3"
 )
 
 // Logger is exposed to control logging behavior from outside
