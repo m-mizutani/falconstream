@@ -27,9 +27,9 @@ func main() {
 	app.Usage = "Event forwarder for CrowdStrike Falcon"
 	app.Version = falconstream.Version
 	app.Authors = []cli.Author{
-		cli.Author{
+		{
 			Name:  "Masayoshi Mizutani",
-			Email: "mizutani@sfc.wide.ad.jp",
+			Email: "mizutani@hey.com",
 		},
 	}
 
