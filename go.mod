@@ -15,3 +15,7 @@ require (
 	golang.org/x/sys v0.0.0-20191002091554-b397fe3ad8ed // indirect
 	golang.org/x/text v0.3.2 // indirect
 )
+
+replace (
+        github.com/m-mizutani/gofalcon v0.0.0-20191003010721-fc6517c9acd1 => ../gofalcon
+)
