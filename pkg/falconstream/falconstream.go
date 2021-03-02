@@ -21,6 +21,7 @@ func SetGoFalconLoggerLevel(level logrus.Level) {
 
 // Arguments includes all parameters that can be controlled from outside for Stream.
 type Arguments struct {
+	Endpoint   string
 	Credential CredentialArguments
 	Emitter    EmitterArguments
 }
@@ -42,6 +43,8 @@ func (x *Stream) Start(args Arguments) error {
 	}
 
 	client := gofalcon.NewClient()
+	client.Endpoint = args.Endpoint
+
 	if err := client.EnableOAuth2(cred.ClientID, cred.Secret); err != nil {
 		return err
 	}

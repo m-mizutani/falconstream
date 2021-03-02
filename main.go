@@ -66,6 +66,12 @@ func main() {
 			Usage:       "AWS S3 prefix for S3 emitter",
 			Destination: &args.Emitter.AwsS3Prefix,
 		},
+		cli.StringFlag{
+			Name:        "endpoint",
+			Usage:       "CrowdStrike API endpoint",
+			Destination: &args.Endpoint,
+			Value:       "https://api.crowdstrike.com",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
