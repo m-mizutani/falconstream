@@ -27,9 +27,9 @@ func main() {
 	app.Usage = "Event forwarder for CrowdStrike Falcon"
 	app.Version = falconstream.Version
 	app.Authors = []cli.Author{
-		cli.Author{
+		{
 			Name:  "Masayoshi Mizutani",
-			Email: "mizutani@sfc.wide.ad.jp",
+			Email: "mizutani@hey.com",
 		},
 	}
 
@@ -65,6 +65,12 @@ func main() {
 			Name:        "aws-s3-prefix",
 			Usage:       "AWS S3 prefix for S3 emitter",
 			Destination: &args.Emitter.AwsS3Prefix,
+		},
+		cli.StringFlag{
+			Name:        "endpoint",
+			Usage:       "CrowdStrike API endpoint",
+			Destination: &args.Endpoint,
+			Value:       "https://api.crowdstrike.com",
 		},
 	}
 
