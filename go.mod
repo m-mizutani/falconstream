@@ -3,16 +3,15 @@ module github.com/m-mizutani/falconstream
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.35.20
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/aws/aws-sdk-go v1.49.13
+	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
-	github.com/m-mizutani/gofalcon v0.0.0-20201104072411-2e314ada127b
-	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/m-mizutani/gofalcon v0.0.0-20201106020525-c0b6151de297
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.7.0
-	github.com/urfave/cli v1.22.5
-	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	github.com/sirupsen/logrus v1.9.3
+	github.com/urfave/cli v1.22.14
+	golang.org/x/sys v0.15.0 // indirect
 )
