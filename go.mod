@@ -3,7 +3,7 @@ module github.com/bermannoah/falconstream
 go 1.21.6
 
 require (
-	github.com/aws/aws-sdk-go v1.49.13
+	github.com/aws/aws-sdk-go v1.49.21
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/m-mizutani/falconstream v0.2.0
 	github.com/m-mizutani/gofalcon v0.0.0-20201106020525-c0b6151de297
@@ -19,5 +19,5 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 )
