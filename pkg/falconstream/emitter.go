@@ -180,6 +180,31 @@ func (x *s3Emitter) emit(ev *falconEvent) error {
 			return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
 		}
 		Logger.WithField("s3path", s3Path).Trace("Object uploaded")
+		if exists {
+			newHash := sha256.New()
+			if _, err := newHash.Write(raw); err != nil {
+				return errors.Wrap(err, "Fail to write buffer for sha256 hash")
+			}
+			fileName := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", newHash.Sum(nil))
+			s3Key := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fileName
+
+			var buf bytes.Buffer
+			zw := gzip.NewWriter(&buf)
+			if _, err := zw.Write(raw); err != nil {
+				return errors.Wrap(err, "Fail to write gzip stream for event")
+			}
+			zw.Close()
+
+			_, err = x.s3client.PutObject(&s3.PutObjectInput{
+				Body:   bytes.NewReader(buf.Bytes()),
+				Bucket: &x.args.AwsS3Bucket,
+				Key:    &s3Key,
+			})
+			if err != nil {
+				return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
+			}
+			Logger.WithField("s3path", s3Path).Trace("Object uploaded")
+		}
 	} else {
 		Logger.WithField("s3path", s3Path).Trace("Object already exists")
 	}
