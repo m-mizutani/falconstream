@@ -3,9 +3,11 @@ package falconstream
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"os"
 	"time"
 
@@ -125,24 +127,26 @@ func (x *s3Emitter) setup() error {
 	return nil
 }
 func (x *s3Emitter) teardown() error { return nil }
-func (x *s3Emitter) emit(ev *falconEvent) error {
+func (x *s3Emitter) generateS3Identifiers(ev *falconEvent) ([]byte, string, string, error) {
 	raw, err := json.Marshal(ev)
 	if err != nil {
-		return errors.Wrapf(err, "Fail to marshal Falcon Event: %v", *ev)
+		return raw, "", "", errors.Wrapf(err, "Fail to marshal Falcon Event: %v", *ev)
 	}
 
 	t := time.Unix(ev.MetaData.EventCreationTime/1000, 0)
 	h := sha256.New()
 	if _, err := h.Write(raw); err != nil {
-		return errors.Wrap(err, "Fail to write buffer for sha256 hash")
+		return raw, "", "", errors.Wrap(err, "Fail to write buffer for sha256 hash")
 	}
-	fname := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", h.Sum(nil))
-	s3Key := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fname
+	fileName := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", h.Sum(nil))
+	s3Key := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fileName
 	s3Path := "s3://" + x.args.AwsS3Bucket + "/" + s3Key
 
-	Logger.WithField("s3path", s3Path).Trace("Uploading s3 object")
+	return raw, s3Key, s3Path, nil
+}
 
-	_, err = x.s3client.HeadObject(&s3.HeadObjectInput{
+func (x *s3Emitter) checkIfFileExists(s3Key string) (bool, error) {
+	_, err := x.s3client.HeadObject(&s3.HeadObjectInput{
 		Bucket: &x.args.AwsS3Bucket,
 		Key:    &s3Key,
 	})
@@ -156,57 +160,86 @@ func (x *s3Emitter) emit(ev *falconEvent) error {
 			case "NotFound":
 				exists = false
 			default:
-				return errors.Wrapf(err, "HeadObject error: %s", aerr.Error())
+				return exists, errors.Wrapf(err, "HeadObject error: %s", aerr.Error())
 			}
 		} else {
-			return errors.Wrap(err, "HeadObject error")
+			return exists, errors.Wrap(err, "HeadObject error")
 		}
 	}
 
+	return exists, nil
+}
+
+func (x s3Emitter) handleSuccessfulUpload(s3Key string, s3Path string, raw []byte) error {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	if _, err := zw.Write(raw); err != nil {
+		return errors.Wrap(err, "Fail to write gzip stream for event")
+	}
+	zw.Close()
+
+	_, err := x.s3client.PutObject(&s3.PutObjectInput{
+		Body:   bytes.NewReader(buf.Bytes()),
+		Bucket: &x.args.AwsS3Bucket,
+		Key:    &s3Key,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
+	}
+	Logger.WithField("s3path", s3Path).Trace("Object uploaded")
+	return nil
+}
+
+func (x *s3Emitter) reUploadWithNewIdentifier(raw []byte, ev *falconEvent) error {
+	newHash := sha256.New()
+	if _, err := newHash.Write(raw); err != nil {
+		return errors.Wrap(err, "Fail to write buffer for sha256 hash")
+	}
+
+	max := big.NewInt(1000)
+	randomNumber, err := rand.Int(rand.Reader, max)
+	if err != nil {
+		return errors.Wrap(err, "Fail to generate random number")
+	}
+	n := randomNumber.String()
+
+	t := time.Unix(ev.MetaData.EventCreationTime/1000, 0)
+	fileName := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", newHash.Sum(nil))
+	s3KeyNew := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fileName + n
+	s3PathNew := "s3://" + x.args.AwsS3Bucket + "/" + s3KeyNew
+	oopsie := x.handleSuccessfulUpload(s3KeyNew, s3PathNew, raw)
+	if oopsie != nil {
+		return errors.Wrapf(oopsie, "Fail to upload object: %s", s3PathNew)
+	}
+	return nil
+}
+
+func (x *s3Emitter) emit(ev *falconEvent) error {
+	raw, s3Key, s3Path, err := x.generateS3Identifiers(ev)
+	if err != nil {
+		return errors.Wrap(err, "Fail to generate S3 identifiers")
+	}
+
+	Logger.WithField("s3path", s3Path).Trace("Uploading s3 object")
+	exists, err := x.checkIfFileExists(s3Key)
+	if err != nil {
+		return errors.Wrapf(err, "Fail to check if object exists: %s", s3Path)
+	}
+
 	if !exists {
-		var buf bytes.Buffer
-		zw := gzip.NewWriter(&buf)
-		if _, err := zw.Write(raw); err != nil {
-			return errors.Wrap(err, "Fail to write gzip stream for event")
-		}
-		zw.Close()
-
-		_, err = x.s3client.PutObject(&s3.PutObjectInput{
-			Body:   bytes.NewReader(buf.Bytes()),
-			Bucket: &x.args.AwsS3Bucket,
-			Key:    &s3Key,
-		})
+		err := x.handleSuccessfulUpload(s3Key, s3Path, raw)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
+			return errors.Wrapf(err, "Fail to upload object: %s", s3Path)
 		}
-		Logger.WithField("s3path", s3Path).Trace("Object uploaded")
+
 		if exists {
-			newHash := sha256.New()
-			if _, err := newHash.Write(raw); err != nil {
-				return errors.Wrap(err, "Fail to write buffer for sha256 hash")
-			}
-			fileName := t.Format("20060102_150405_") + fmt.Sprintf("%x.json.gz", newHash.Sum(nil))
-			s3Key := x.args.AwsS3Prefix + t.Format("2006/01/02") + "/" + fileName
-
-			var buf bytes.Buffer
-			zw := gzip.NewWriter(&buf)
-			if _, err := zw.Write(raw); err != nil {
-				return errors.Wrap(err, "Fail to write gzip stream for event")
-			}
-			zw.Close()
-
-			_, err = x.s3client.PutObject(&s3.PutObjectInput{
-				Body:   bytes.NewReader(buf.Bytes()),
-				Bucket: &x.args.AwsS3Bucket,
-				Key:    &s3Key,
-			})
+			err := x.reUploadWithNewIdentifier(raw, ev)
 			if err != nil {
-				return errors.Wrapf(err, "Fail to put log object: %s", s3Path)
+				return errors.Wrapf(err, "Fail to upload object with new ident: %s", s3Path)
 			}
-			Logger.WithField("s3path", s3Path).Trace("Object uploaded")
 		}
 	} else {
-		Logger.WithField("s3path", s3Path).Trace("Object already exists")
+		Logger.WithField("s3path", s3Path).Trace("Object already exists and could not be replaced")
 	}
 
 	return nil
